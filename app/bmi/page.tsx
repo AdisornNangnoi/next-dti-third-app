@@ -3,39 +3,52 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import bmi from "../images/bmi.png";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
 
 export default function Page() {
-  // 1. สร้าง State สำหรับเก็บค่าน้ำหนัก, ส่วนสูง, และผลลัพธ์
+  const router = useRouter(); // 2. สร้าง instance ของ router
+
+  // สร้าง State สำหรับเก็บค่าน้ำหนัก, ส่วนสูง, และผลลัพธ์
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
-  const [result, setResult] = useState("0.00"); // State สำหรับแสดงผลใน UI เดิม
+  const [result, setResult] = useState("0.00");
 
-  // 2. ฟังก์ชันสำหรับคำนวณ BMI
+  // ฟังก์ชันสำหรับคำนวณ BMI
   const handleCalculate = () => {
+    // 3. เพิ่มการแจ้งเตือน
+    if (!weight || parseFloat(weight) <= 0) {
+      alert("กรุณาป้อนน้ำหนักให้ถูกต้อง");
+      return; // หยุดการทำงานถ้าข้อมูลไม่ถูกต้อง
+    }
+    if (!height || parseFloat(height) <= 0) {
+      alert("กรุณาป้อนส่วนสูงให้ถูกต้อง");
+      return; // หยุดการทำงานถ้าข้อมูลไม่ถูกต้อง
+    }
+
     const w = parseFloat(weight);
     const h = parseFloat(height);
 
-    // ตรวจสอบว่าค่าที่รับมาเป็นตัวเลขที่มากกว่า 0
-    if (w > 0 && h > 0) {
-      const heightInMeters = h / 100;
-      const bmi = w / (heightInMeters * heightInMeters);
-      setResult(bmi.toFixed(2)); // อัปเดต state ของผลลัพธ์ให้เป็นค่า BMI
-    } else {
-      setResult("0.00"); // หากข้อมูลไม่ถูกต้อง ให้กลับเป็น 0.00
-    }
+    const heightInMeters = h / 100;
+    const bmi = w / (heightInMeters * heightInMeters);
+    setResult(
+      bmi.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
   };
 
-  // 3. ฟังก์ชันสำหรับล้างข้อมูล
+  // ฟังก์ชันสำหรับล้างข้อมูล
   const handleClear = () => {
     setWeight("");
     setHeight("");
-    setResult("0.00"); // รีเซ็ตผลลัพธ์กลับเป็นค่าเริ่มต้น
+    setResult("0.00");
   };
 
   return (
     <div className="bg-gray-900 flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md mx-auto">
-        <div className="bg-white/10 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-2xl p-6 md:p-8 text-white">
+        <div className="bg-white/10 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-2xl p-6 md-p-8 text-white">
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold tracking-tight text-cyan-400">
               BMI Calculator
@@ -64,8 +77,8 @@ export default function Page() {
                 name="amount"
                 placeholder="0.00"
                 className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition duration-200"
-                value={weight} // 4. เชื่อม Input กับ State
-                onChange={(e) => setWeight(e.target.value)} // 5. อัปเดต State เมื่อผู้ใช้พิมพ์
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
               />
             </div>
             <div>
@@ -78,34 +91,38 @@ export default function Page() {
                 name="people"
                 placeholder="0"
                 className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition duration-200"
-                value={height} // 4. เชื่อม Input กับ State
-                onChange={(e) => setHeight(e.target.value)} // 5. อัปเดต State เมื่อผู้ใช้พิมพ์
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
               />
             </div>
           </div>
 
           <div className="mt-8 space-y-3">
             <button
-              onClick={handleCalculate} // 6. เรียกใช้ฟังก์ชันคำนวณเมื่อคลิก
+              onClick={handleCalculate}
               className="w-full bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300"
             >
               คำนวณ BMI
             </button>
             <button
-              onClick={handleClear} // 6. เรียกใช้ฟังก์ชันล้างข้อมูลเมื่อคลิก
+              onClick={handleClear}
               className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300"
             >
               ล้างข้อมูล
             </button>
+            {/* 4. เพิ่มปุ่มย้อนกลับ */}
+            <button
+              onClick={() => router.back()}
+              className="w-full bg-transparent hover:bg-gray-700 border border-gray-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300"
+            >
+              ย้อนกลับ
+            </button>
           </div>
 
-          {/* */}
           <div className="mt-8 text-center bg-gray-800/60 p-4 rounded-lg border border-gray-700">
             <p className="text-lg font-semibold text-gray-200">
               ค่า BMI ที่คำนวณได้ :{" "}
-              <span className="text-2xl text-cyan-300 font-bold">
-                {result} {/* 7. แสดงผลลัพธ์จาก State */}
-              </span>
+              <span className="text-2xl text-cyan-300 font-bold">{result}</span>
             </p>
           </div>
         </div>

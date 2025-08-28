@@ -3,50 +3,60 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import bmr from "../images/bmr.png";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
 
 export default function Page() {
-  // 1. สร้าง State สำหรับเก็บข้อมูลทั้งหมด
+  const router = useRouter(); // 2. สร้าง instance ของ router
+
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState(""); // 'male' or 'female'
+  const [gender, setGender] = useState("male");
   const [bmrResult, setBmrResult] = useState("0.00");
 
-  // 2. ฟังก์ชันสำหรับคำนวณ BMR
   const handleCalculate = () => {
+    // 3. เพิ่มการแจ้งเตือนสำหรับแต่ละช่องข้อมูล
+    if (!weight || parseFloat(weight) <= 0) {
+      alert("กรุณาป้อนน้ำหนักให้ถูกต้อง");
+      return;
+    }
+    if (!height || parseFloat(height) <= 0) {
+      alert("กรุณาป้อนส่วนสูงให้ถูกต้อง");
+      return;
+    }
+    if (!age || parseInt(age, 10) <= 0) {
+      alert("กรุณาป้อนอายุให้ถูกต้อง");
+      return;
+    }
+    if (!gender) {
+      alert("กรุณาเลือกเพศ");
+      return;
+    }
+
     const w = parseFloat(weight);
     const h = parseFloat(height);
     const a = parseInt(age, 10);
 
-    // ตรวจสอบว่าข้อมูลครบถ้วนและถูกต้อง
-    if (w > 0 && h > 0 && a > 0 && gender) {
-      let calculatedBmr = 0;
-      // ใช้สูตร Mifflin-St Jeor ในการคำนวณ
-      if (gender === "male") {
-        // BMR สำหรับผู้ชาย = 10 * น้ำหนัก (kg) + 6.25 * ส่วนสูง (cm) - 5 * อายุ (ปี) + 5
-        calculatedBmr = 10 * w + 6.25 * h - 5 * a + 5;
-      } else if (gender === "female") {
-        // BMR สำหรับผู้หญิง = 10 * น้ำหนัก (kg) + 6.25 * ส่วนสูง (cm) - 5 * อายุ (ปี) - 161
-        calculatedBmr = 10 * w + 6.25 * h - 5 * a - 161;
-      }
-      setBmrResult(calculatedBmr.toFixed(2));
-    } else {
-      setBmrResult("0.00"); // หากข้อมูลไม่ถูกต้อง ให้แสดงเป็น 0.00
+    let calculatedBmr = 0;
+    if (gender === "male") {
+      calculatedBmr = 10 * w + 6.25 * h - 5 * a + 5;
+    } else if (gender === "female") {
+      calculatedBmr = 10 * w + 6.25 * h - 5 * a - 161;
     }
+    setBmrResult(
+      calculatedBmr.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
   };
 
-  // 3. ฟังก์ชันสำหรับล้างข้อมูล
   const handleClear = () => {
     setWeight("");
     setHeight("");
     setAge("");
     setGender("");
     setBmrResult("0.00");
-    // ยกเลิกการเลือก radio button
-    const maleRadio = document.getElementById("male") as HTMLInputElement;
-    const femaleRadio = document.getElementById("female") as HTMLInputElement;
-    if (maleRadio) maleRadio.checked = false;
-    if (femaleRadio) femaleRadio.checked = false;
   };
 
   return (
@@ -121,6 +131,7 @@ export default function Page() {
                     type="radio"
                     id="male"
                     name="gender"
+                    checked={gender === "male"} // 4. ควบคุมการ check จาก state
                     onChange={() => setGender("male")}
                     className="custom-radio form-radio h-5 w-5 text-emerald-500 bg-gray-700 border-gray-500 focus:ring-emerald-500"
                   />
@@ -131,6 +142,7 @@ export default function Page() {
                     type="radio"
                     id="female"
                     name="gender"
+                    checked={gender === "female"} // 4. ควบคุมการ check จาก state
                     onChange={() => setGender("female")}
                     className="custom-radio form-radio h-5 w-5 text-emerald-500 bg-gray-700 border-gray-500 focus:ring-emerald-500"
                   />
@@ -151,6 +163,13 @@ export default function Page() {
               className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300"
             >
               ล้างข้อมูล
+            </button>
+            {/* 5. เพิ่มปุ่มย้อนกลับ */}
+            <button
+              onClick={() => router.back()}
+              className="w-full bg-transparent hover:bg-gray-700 border border-gray-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300"
+            >
+              ย้อนกลับ
             </button>
           </div>
           <div className="mt-8 text-center bg-gray-800/60 p-4 rounded-lg border border-gray-700">

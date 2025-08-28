@@ -2,48 +2,51 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import car from "../images/car.png";
-import { useRouter } from "next/navigation"; // 1. Import useRouter สำหรับปุ่มย้อนกลับ
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const router = useRouter(); // 2. สร้าง instance ของ router
+  const router = useRouter();
 
-  // 3. สร้าง State สำหรับเก็บข้อมูลจากฟอร์มและผลลัพธ์
   const [name, setName] = useState("");
   const [carPrice, setCarPrice] = useState("");
   const [interestRate, setInterestRate] = useState("");
-  const [downPayment, setDownPayment] = useState("15"); // ค่าเริ่มต้น 15%
-  const [months, setMonths] = useState("24"); // ค่าเริ่มต้น 24 เดือน
+  const [downPayment, setDownPayment] = useState("15");
+  const [months, setMonths] = useState("24");
   const [monthlyInstallment, setMonthlyInstallment] = useState("0.00");
 
-  // 4. ฟังก์ชันสำหรับคำนวณค่างวด
+  // แก้ไขฟังก์ชันสำหรับคำนวณค่างวด
   const handleCalculate = () => {
+    // --- START: เพิ่มการแจ้งเตือน ---
+    if (!carPrice || parseFloat(carPrice) <= 0) {
+      alert("กรุณาระบุราคารถให้ถูกต้อง");
+      return; // หยุดการทำงาน
+    }
+    if (interestRate === "" || parseFloat(interestRate) < 0) {
+      alert("กรุณาระบุดอกเบี้ยให้ถูกต้อง (สามารถเป็น 0 ได้)");
+      return; // หยุดการทำงาน
+    }
+    // --- END: เพิ่มการแจ้งเตือน ---
+
     const price = parseFloat(carPrice);
     const interest = parseFloat(interestRate);
     const downPercent = parseFloat(downPayment);
     const termMonths = parseInt(months, 10);
 
-    // ตรวจสอบข้อมูล
-    if (price > 0 && interest >= 0 && downPercent >= 0 && termMonths > 0) {
-      // คำนวณตามสูตรที่ให้มา
-      const downPaymentAmount = price * (downPercent / 100);
-      const financeAmount = price - downPaymentAmount; // ยอดจัด
-      const totalInterest =
-        financeAmount * (interest / 100) * (termMonths / 12); // ดอกเบี้ยทั้งหมด
-      const totalPayment = financeAmount + totalInterest;
-      const installment = totalPayment / termMonths; // ค่าผ่อนต่อเดือน
+    // เมื่อผ่านการตรวจสอบแล้ว จึงคำนวณตามปกติ
+    const downPaymentAmount = price * (downPercent / 100);
+    const financeAmount = price - downPaymentAmount;
+    const totalInterest = financeAmount * (interest / 100) * (termMonths / 12);
+    const totalPayment = financeAmount + totalInterest;
+    const installment = totalPayment / termMonths;
 
-      setMonthlyInstallment(
-        installment.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      );
-    } else {
-      setMonthlyInstallment("0.00");
-    }
+    setMonthlyInstallment(
+      installment.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
   };
 
-  // 5. ฟังก์ชันสำหรับล้างข้อมูล
   const handleClear = () => {
     setName("");
     setCarPrice("");
@@ -175,7 +178,6 @@ export default function Page() {
             >
               ล้างข้อมูล
             </button>
-            {/* 6. เพิ่มปุ่มย้อนกลับ และเชื่อมต่อกับฟังก์ชัน */}
             <button
               onClick={() => router.back()}
               className="w-full bg-transparent hover:bg-gray-700 border border-gray-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300"
